@@ -12,7 +12,7 @@ import pandas as pd
 
 
 w = [] #words
-with open('unigram_freq.csv','r',encoding="utf8") as f:
+with open('unigram_freq.txt','r',encoding="utf8") as f:
     file_name_data = f.read()
     file_name_data = file_name_data.lower()
     w = re.findall('\w+', file_name_data)
@@ -35,7 +35,7 @@ def get_count(words):
 
 
 word_count = get_count(w)
-print(f"The dictionary has  {len(word_count)} key values pairs")
+print(f"The dictionary has {len(word_count)} key values pairs")
 
 
 
