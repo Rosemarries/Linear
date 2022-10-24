@@ -23,7 +23,7 @@ def process_freq(file_name):
 def save_vocab():
     word_l = process_data("words.txt")
     vocab = set(word_l)
-    print(f"The first 10 words in the text are : \n{word_l[0:10]}")
+    # print(f"The first 10 words in the text are : \n{word_l[0:10]}")
     print(f"There are {len(vocab)} words in the vocabulary.\n")
     return word_l
 
@@ -37,11 +37,11 @@ def get_count(word_l, word, freq):
     return word_count_dict
 
 # fix this function calculations
-def get_probabilities(word_count_dict, word, freq):
+def get_probabilities(word_count_dict):
     probabilities = {}
     total = sum(word_count_dict.values())
     for i in word_count_dict:
-        probabilities[i] = word_count_dict[i] / total
+        probabilities[i] = float("{:f}".format(word_count_dict[i] / total))
     # print(f"Length of probabilities is {len(probabilities)}")
     # print(f"P(\"{word}\") is {probabilities[word]:.4f}\n")
     return probabilities
@@ -160,7 +160,7 @@ def min_edit_distance(source, target, insert_cost=1, delete_cost=1, replace_cost
     return Dimension, minimum_edit_distance
 
 def similarity(word, word_count_dict, probs):
-    sim = [1-(textdistance.Jaccard(qval=2).distance(v,word)) for v in word_count_dict]
+    sim = [1-(textdistance.Jaccard(qval=2).distance(v,word)) for v in word_count_dict.keys()]
     df = pd.DataFrame.from_dict(probs, orient='index').reset_index()
     df = df.rename(columns={'index':'Word', 0:'Prob'})
     df['Similarity'] = sim
@@ -173,7 +173,7 @@ word = input("Enter word : ")
 word_l = save_vocab()
 freqs = process_freq("freq.txt")
 word_count_dict = get_count(word_l, word, freqs)
-probabilities = get_probabilities(word_count_dict, word, freqs)
+probabilities = get_probabilities(word_count_dict)
 
 if word in word_l:
     print(f"We have {word} in our dictionary.")
