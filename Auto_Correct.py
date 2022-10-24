@@ -159,8 +159,13 @@ def min_edit_distance(source, target, insert_cost=1, delete_cost=1, replace_cost
     minimum_edit_distance = Dimension[len_src, len_target]
     return Dimension, minimum_edit_distance
 
-def distance():
-    pass
+def similarity(word):
+    sim = [1-(textdistance.Jaccard(qval=2).distance(v,input_word)) for v in word_freq.keys()]
+    df = pd.DataFrame.from_dict(probs, orient='index').reset_index()
+    df = df.rename(columns={'index':'Word', 0:'Prob'})
+    df['Similarity'] = sim
+    output = df.sort_values(['Similarity', 'Prob'], ascending=False).head()
+    return output
 
 
 word = input("Enter word : ")
