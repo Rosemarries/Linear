@@ -3,7 +3,9 @@ import re  # regular expression
 from collections import Counter
 import numpy as np
 import pandas as pd
-
+import spacy
+import nltk
+from math import sqrt, pow, exp
 
 # Implement the function process_data which
 # 1) Reads in a corpus
@@ -140,8 +142,30 @@ def get_corrections(word, probs, vocab, n=2):
     return best_suggestion
 
 
+
+def squared_sum(x):
+    # return 3 rounded square rooted value
+    return round(sqrt(sum([a*a for a in x])),3)
+
+
+def cos_similarity(x,y):
+    # return cosine similarity between two lists
+    numerator = sum(a*b for a,b in zip(x,y))
+    denominator = squared_sum(x)*squared_sum(y)
+    return round(numerator/float(denominator),3)
+
+
+nlp = spacy.load('en_core_web_lg')
+
 my_word = input("Enter any word:")
+my_word_nlp = nlp(my_word)
 probs = get_probs(word_count)
 tmp_corrections = get_corrections(my_word, probs, v, 2)
 for i, word_prob in enumerate(tmp_corrections):
-    print(f"word {i}: {word_prob[0]}, probability {word_prob[1]:.6f}")
+    word_prob_nlp = nlp(word_prob[0])
+    print(f"word {i}: \t{word_prob[0]}", end="")
+    print(f" \t{word_prob[1]*100:.4f}%", end="")
+    # print(f"\t |  Similarity : {nlp(my_word).similarity(nlp(word_prob[0]))}", end="")
+    # print(f"\t |  Different(characters) : {nltk.edit_distance(my_word, word_prob[0])}", end="")
+    # print(f" , Cosine : {cos_similarity(nlp(my_word).vector, nlp(word_prob[0]).vector):.4f}")
+    print(f"\t |  Similarity : {my_word_nlp.similarity(word_prob_nlp):.4f}")
