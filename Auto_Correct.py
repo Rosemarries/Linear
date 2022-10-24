@@ -2,6 +2,7 @@ import re
 import string
 import numpy as np
 import pandas as pd
+import textdistance
 from collections import Counter
 
 def process_data(file_name):
@@ -158,6 +159,9 @@ def min_edit_distance(source, target, insert_cost=1, delete_cost=1, replace_cost
     minimum_edit_distance = Dimension[len_src, len_target]
     return Dimension, minimum_edit_distance
 
+def distance():
+    pass
+
 
 word = input("Enter word : ")
 
@@ -168,13 +172,16 @@ probabilities = get_probabilities(word_count_dict, word, freqs)
 # edit_1_l = sorted(list(edit_1_letter(word)))
 # edit_2_set = sorted(list(edit_2_letters(word)))
 
-corrections = get_corrections(word, probabilities, word_l, 10, True)
-for i, word_probs in enumerate(corrections):
-    print(f"\nword {i}: {word_probs[0]}, probability = {word_probs[1]:.6f}")
-    matrix, min_edit = min_edit_distance(word, word_probs[0])
-    print(f"minimum edits = {min_edit}\n")
-    idx = list("#" + word)
-    cols = list("#" + word_probs[0])
-    df = pd.DataFrame(matrix, index=idx, columns=cols)
-    print(df)
-    print("-"*50)
+if word in word_l:
+    print(f"We have {word} in our dictionary.")
+else:
+    corrections = get_corrections(word, probabilities, word_l, 10, True)
+    for i, word_probs in enumerate(corrections):
+        print(f"\nword {i}: {word_probs[0]}, probability = {word_probs[1]:.6f}")
+        matrix, min_edit = min_edit_distance(word, word_probs[0])
+        print(f"minimum edits = {min_edit}\n")
+        idx = list("#" + word)
+        cols = list("#" + word_probs[0])
+        df = pd.DataFrame(matrix, index=idx, columns=cols)
+        print(df)
+        print("-"*50)
