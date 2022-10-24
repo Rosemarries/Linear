@@ -135,6 +135,29 @@ def get_corrections(word, probabilities, vocab, n=2, verbose=True):
         print(f"Enter word : {word}, suggestions = {suggestions}")
     return n_best
 
+def min_edit_distance(source, target, insert_cost=1, delete_cost=1, replace_cost=2):
+    a, b, c = 0, 0, 0
+    d = []
+    len_src = len(source)
+    len_target = len(target)
+    Dimension = np.zeros((len_src+1, len_target+1), dtype=int)
+    for row in range(0, len_src+1):
+        Dimension[row, 0] = row
+    for col in range(0, len_target+1):
+        Dimension[0, col] = col
+    for row in range(1, len_src+1):
+        for col in range(1, len_target+1):
+            r_cost = replace_cost
+            if source[row-1] == target[col-1]:
+                r_cost = 0
+            a = Dimension[row-1, col] + delete_cost
+            b = Dimension[row, col-1] + insert_cost
+            c = Dimension[row-1, col-1] + r_cost
+            d = [a, b, c]
+            Dimension[row, col] = min(d)
+    minimum_edit_distance = Dimension[len_src, len_target]
+    return Dimension, minimum_edit_distance
+
 
 word = input("Enter word : ")
 
@@ -143,10 +166,14 @@ freqs = process_freq("freq.txt")
 word_count_dict = get_count(word_l, word, freqs)
 probabilities = get_probabilities(word_count_dict, word, freqs)
 edit_1_l = sorted(list(edit_1_letter(word)))
-# print(edit_1_l)
 edit_2_set = sorted(list(edit_2_letters(word)))
-# print(edit_2_set)
 
 corrections = get_corrections(word, probabilities, word_l, 10, True)
 for i, word_probs in enumerate(corrections):
-    print(f"word {i}: {word_probs[0]}, probability = {word_probs[1]:.6f}")
+    print(f"\nword {i}: {word_probs[0]}, probability = {word_probs[1]:.6f}")
+    matrix, min_edit = min_edit_distance(word, word_probs[0])
+    print(f"minimum edits = {min_edit}\n")
+    idx = list("#" + word)
+    cols = list("#" + word_probs[0])
+    df = pd.DataFrame(matrix, index=idx, columns=cols)
+    print(df)
