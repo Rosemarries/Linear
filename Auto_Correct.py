@@ -159,8 +159,8 @@ def min_edit_distance(source, target, insert_cost=1, delete_cost=1, replace_cost
     minimum_edit_distance = Dimension[len_src, len_target]
     return Dimension, minimum_edit_distance
 
-def similarity(word):
-    sim = [1-(textdistance.Jaccard(qval=2).distance(v,input_word)) for v in word_freq.keys()]
+def similarity(word, word_count_dict, probs):
+    sim = [1-(textdistance.Jaccard(qval=2).distance(v,word)) for v in word_count_dict]
     df = pd.DataFrame.from_dict(probs, orient='index').reset_index()
     df = df.rename(columns={'index':'Word', 0:'Prob'})
     df['Similarity'] = sim
@@ -180,6 +180,7 @@ probabilities = get_probabilities(word_count_dict, word, freqs)
 if word in word_l:
     print(f"We have {word} in our dictionary.")
 else:
+    print(similarity(word, word_count_dict, probabilities))
     corrections = get_corrections(word, probabilities, word_l, 10, True)
     for i, word_probs in enumerate(corrections):
         print(f"\nword {i}: {word_probs[0]}, probability = {word_probs[1]:.6f}")
