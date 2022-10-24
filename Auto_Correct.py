@@ -31,8 +31,8 @@ def get_count(word_l, word, freq):
     for i in range(len(word_l)):
         word_count_dict[word_l[i]] = freq[i]
     # word_count_dict = Counter(word_l)
-    print(f"There are {len(word_count_dict)} key values pairs")
-    print(f"The count for the word {word} is {word_count_dict.get(word, 0)}")
+    # print(f"There are {len(word_count_dict)} key values pairs")
+    # print(f"The count for the word {word} is {word_count_dict.get(word, 0)}")
     return word_count_dict
 
 # fix this function calculations
@@ -41,7 +41,7 @@ def get_probabilities(word_count_dict, word, freq):
     total = sum(word_count_dict.values())
     for i in word_count_dict:
         probabilities[i] = word_count_dict[i] / total
-    print(f"Length of probabilities is {len(probabilities)}")
+    # print(f"Length of probabilities is {len(probabilities)}")
     # print(f"P(\"{word}\") is {probabilities[word]:.4f}\n")
     return probabilities
 
@@ -165,8 +165,8 @@ word_l = save_vocab()
 freqs = process_freq("freq.txt")
 word_count_dict = get_count(word_l, word, freqs)
 probabilities = get_probabilities(word_count_dict, word, freqs)
-edit_1_l = sorted(list(edit_1_letter(word)))
-edit_2_set = sorted(list(edit_2_letters(word)))
+# edit_1_l = sorted(list(edit_1_letter(word)))
+# edit_2_set = sorted(list(edit_2_letters(word)))
 
 corrections = get_corrections(word, probabilities, word_l, 10, True)
 for i, word_probs in enumerate(corrections):
@@ -177,3 +177,4 @@ for i, word_probs in enumerate(corrections):
     cols = list("#" + word_probs[0])
     df = pd.DataFrame(matrix, index=idx, columns=cols)
     print(df)
+    print("-"*50)
