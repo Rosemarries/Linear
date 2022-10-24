@@ -174,20 +174,22 @@ word_l = save_vocab()
 freqs = process_freq("freq.txt")
 word_count_dict = get_count(word_l, word, freqs)
 probabilities = get_probabilities(word_count_dict, word, freqs)
-# edit_1_l = sorted(list(edit_1_letter(word)))
-# edit_2_set = sorted(list(edit_2_letters(word)))
 
 if word in word_l:
     print(f"We have {word} in our dictionary.")
 else:
-    print(similarity(word, word_count_dict, probabilities))
-    corrections = get_corrections(word, probabilities, word_l, 10, True)
-    for i, word_probs in enumerate(corrections):
-        print(f"\nword {i}: {word_probs[0]}, probability = {word_probs[1]:.6f}")
-        matrix, min_edit = min_edit_distance(word, word_probs[0])
+    summary = similarity(word, word_count_dict, probabilities)
+    word_summary = summary["Word"].values
+    sim_summary = summary["Similarity"].values
+    # corrections = get_corrections(word, probabilities, word_l, 10, True)
+    # for i, word_probs in enumerate(corrections):
+    for i in range(len(word_summary)):
+        print(f"\nword {i}: {word_summary[i]}, similarity = {sim_summary[i]:.6f}")
+        matrix, min_edit = min_edit_distance(word, word_summary[i])
         print(f"minimum edits = {min_edit}\n")
         idx = list("#" + word)
-        cols = list("#" + word_probs[0])
+        cols = list("#" + word_summary[i])
         df = pd.DataFrame(matrix, index=idx, columns=cols)
         print(df)
         print("-"*50)
+    print(summary)
