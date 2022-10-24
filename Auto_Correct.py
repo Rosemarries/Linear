@@ -20,7 +20,7 @@ def process_freq(file_name):
     return freqs
 
 def save_vocab():
-    word_l = process_data("unigram_freq.txt")
+    word_l = process_data("words.txt")
     vocab = set(word_l)
     print(f"The first 10 words in the text are : \n{word_l[0:10]}")
     print(f"There are {len(vocab)} words in the vocabulary.\n")
