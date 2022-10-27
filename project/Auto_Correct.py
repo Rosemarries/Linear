@@ -167,6 +167,14 @@ def similarity(word, word_count_dict, probs):
     output = df.sort_values(['Similarity', 'Prob'], ascending=False).head()
     return output
 
+def similarity2(word, word_count_dict, probs, min_edit=[]):
+    sim = [1-(textdistance.Jaccard(qval=2).distance(v,word)) for v in word_count_dict.keys()]
+    df = pd.DataFrame.from_dict(probs, orient='index').reset_index()
+    df = df.rename(columns={'index':'Word', 0:'Prob'})
+    df['Similarity'] = sim
+    df['MinEdit'] = min_edit
+    output = df.sort_values(['MinEdit', 'Similarity'], ascending=True).head()
+    return output
 
 word = input("Enter word : ")
 
@@ -181,26 +189,35 @@ else:
     summary = similarity(word, word_count_dict, probabilities)
     word_summary = summary["Word"].values
     sim_summary = summary["Similarity"].values
-    # corrections = get_corrections(word, probabilities, word_l, 10, True)
-    # for i, word_probs in enumerate(corrections):
     matrix, min_edit, df = [], [], []
-    for i in range(len(word_summary)):
-        # print(f"\nword {i}: {word_summary[i]}, similarity = {sim_summary[i]:.6f}")
-        matrix_temp, min_edit_temp = min_edit_distance(word, word_summary[i])
+    for i in range(len(word_l)):
+        matrix_temp, min_edit_temp = min_edit_distance(word, word_l[i])
         matrix.append(matrix_temp)
         min_edit.append(min_edit_temp)
-        # print(f"minimum edits = {min_edit}\n")
         idx = list("#" + word)
-        cols = list("#" + word_summary[i])
+        cols = list("#" + word_l[i])
         df_temp = pd.DataFrame(matrix_temp, index=idx, columns=cols)
-        # print(df)
-        # print("-"*50)
         df.append(df_temp)
+
+    count = 0
     for i in range(50):
-        for j in range(len(word_summary)):
+        if count == 10:
+            break
+        for j in range(len(word_l)):
+            if count == 10:
+                break
             if i == min_edit[j]:
-                print(f"\nword {j}: {word_summary[j]}, similarity = {sim_summary[j]:.6f}")
+                print(f"\nword {j}: {word_l[j]}")
                 print(f"minimum edits = {min_edit[j]}\n")
                 print(df[j])
                 print("-"*50)
+                count += 1
+    for i in range(len(word_summary)):
+        for j in range(len(word_summary)-1):
+            if min_edit[j] > min_edit[j+1]:
+                min_edit[j], min_edit[j+1] = min_edit[j+1], min_edit[j]
+                word_summary[j], word_summary[j+1] = word_summary[j+1], word_summary[j]
+                sim_summary[j], sim_summary[j+1] = sim_summary[j+1], sim_summary[j]
+                df[j], df[j+1] = df[j+1], df[j]
+    summary = similarity2(word, word_count_dict, probabilities, min_edit)
     print(summary)
