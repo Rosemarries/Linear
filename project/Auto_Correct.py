@@ -21,7 +21,7 @@ def process_freq(file_name):
     return freqs
 
 def save_vocab():
-    word_l = process_data("words.txt")
+    word_l = process_data("words4.txt")
     vocab = set(word_l)
     # print(f"The first 10 words in the text are : \n{word_l[0:10]}")
     print(f"There are {len(vocab)} words in the vocabulary.\n")
@@ -30,7 +30,7 @@ def save_vocab():
 def get_count(word_l, word, freq):
     word_count_dict = {}
     for i in range(len(word_l)):
-        word_count_dict[word_l[i]] = freq[i]
+        word_count_dict[word_l[i]] = 1
     # word_count_dict = Counter(word_l)
     # print(f"There are {len(word_count_dict)} key values pairs")
     # print(f"The count for the word {word} is {word_count_dict.get(word, 0)}")
