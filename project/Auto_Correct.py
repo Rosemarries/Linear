@@ -183,13 +183,24 @@ else:
     sim_summary = summary["Similarity"].values
     # corrections = get_corrections(word, probabilities, word_l, 10, True)
     # for i, word_probs in enumerate(corrections):
+    matrix, min_edit, df = [], [], []
     for i in range(len(word_summary)):
-        print(f"\nword {i}: {word_summary[i]}, similarity = {sim_summary[i]:.6f}")
-        matrix, min_edit = min_edit_distance(word, word_summary[i])
-        print(f"minimum edits = {min_edit}\n")
+        # print(f"\nword {i}: {word_summary[i]}, similarity = {sim_summary[i]:.6f}")
+        matrix_temp, min_edit_temp = min_edit_distance(word, word_summary[i])
+        matrix.append(matrix_temp)
+        min_edit.append(min_edit_temp)
+        # print(f"minimum edits = {min_edit}\n")
         idx = list("#" + word)
         cols = list("#" + word_summary[i])
-        df = pd.DataFrame(matrix, index=idx, columns=cols)
-        print(df)
-        print("-"*50)
+        df_temp = pd.DataFrame(matrix_temp, index=idx, columns=cols)
+        # print(df)
+        # print("-"*50)
+        df.append(df_temp)
+    for i in range(50):
+        for j in range(len(word_summary)):
+            if i == min_edit[j]:
+                print(f"\nword {j}: {word_summary[j]}, similarity = {sim_summary[j]:.6f}")
+                print(f"minimum edits = {min_edit[j]}\n")
+                print(df[j])
+                print("-"*50)
     print(summary)
