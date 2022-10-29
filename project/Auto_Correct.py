@@ -178,6 +178,14 @@ else:
                 word_l[j], word_l[j+1] = word_l[j+1], word_l[j]
                 sim[j], sim[j+1] = sim[j+1], sim[j]
                 df[j], df[j+1] = df[j+1], df[j]
+    
+    for i in range(len(min_edit)):
+        for j in range(len(min_edit)-1):
+            if min_edit[j] == min_edit[j+1] and sim[j] < sim[j+1]:
+                min_edit[j], min_edit[j+1] = min_edit[j+1], min_edit[j]
+                word_l[j], word_l[j+1] = word_l[j+1], word_l[j]
+                sim[j], sim[j+1] = sim[j+1], sim[j]
+                df[j], df[j+1] = df[j+1], df[j]
 
     count = 0
     limits = 10
