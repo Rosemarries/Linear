@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import textdistance
 from collections import Counter
-from views import word_input
 
 def process_data(file_name):
     words = []
@@ -22,16 +21,16 @@ def process_freq(file_name):
     return freqs
 
 def save_vocab():
-    word_l = process_data("words.txt")
+    word_l = process_data("words4.txt")
     vocab = set(word_l)
     # print(f"The first 10 words in the text are : \n{word_l[0:10]}")
-    # print(f"There are {len(vocab)} words in the vocabulary.\n")
+    print(f"There are {len(vocab)} words in the vocabulary.\n")
     return word_l
 
 def get_count(word_l, word, freq):
     word_count_dict = {}
     for i in range(len(word_l)):
-        word_count_dict[word_l[i]] = freq[i]
+        word_count_dict[word_l[i]] = 1
     # word_count_dict = Counter(word_l)
     # print(f"There are {len(word_count_dict)} key values pairs")
     # print(f"The count for the word {word} is {word_count_dict.get(word, 0)}")
@@ -168,27 +167,57 @@ def similarity(word, word_count_dict, probs):
     output = df.sort_values(['Similarity', 'Prob'], ascending=False).head()
     return output
 
-def word_matrix(word_summary, word_matrixs=[]):
-    for i in range(len(word_summary)):
-        # print(f"\nword {i}: {word_summary[i]}, similarity = {sim_summary[i]:.6f}")
-        matrix, min_edit = min_edit_distance(word, word_summary[i])
-        # print(f"minimum edits = {min_edit}\n")
-        idx = list("#" + word)
-        cols = list("#" + word_summary[i])
-        df = pd.DataFrame(matrix, index=idx, columns=cols)
-        word_matrixs.append(df)
-    return word_matrixs
+def similarity2(word, word_count_dict, probs, min_edit=[]):
+    sim = [1-(textdistance.Jaccard(qval=2).distance(v,word)) for v in word_count_dict.keys()]
+    df = pd.DataFrame.from_dict(probs, orient='index').reset_index()
+    df = df.rename(columns={'index':'Word', 0:'Prob'})
+    df['Similarity'] = sim
+    df['MinEdit'] = min_edit
+    output = df.sort_values(['MinEdit', 'Similarity'], ascending=True).head()
+    return output
 
-word = word_input
+word = input("Enter word : ")
 
 word_l = save_vocab()
 freqs = process_freq("freq.txt")
 word_count_dict = get_count(word_l, word, freqs)
 probabilities = get_probabilities(word_count_dict)
 
-# if word in word_l:
-#     print(f"We have {word} in our dictionary.")
-summary = similarity(word, word_count_dict, probabilities)
-word_summary = summary["Word"].values
-sim_summary = summary["Similarity"].values
-word_matrixs = word_matrix(word_summary)
+if word in word_l:
+    print(f"We have {word} in our dictionary.")
+else:
+    summary = similarity(word, word_count_dict, probabilities)
+    word_summary = summary["Word"].values
+    sim_summary = summary["Similarity"].values
+    matrix, min_edit, df = [], [], []
+    for i in range(len(word_l)):
+        matrix_temp, min_edit_temp = min_edit_distance(word, word_l[i])
+        matrix.append(matrix_temp)
+        min_edit.append(min_edit_temp)
+        idx = list("#" + word)
+        cols = list("#" + word_l[i])
+        df_temp = pd.DataFrame(matrix_temp, index=idx, columns=cols)
+        df.append(df_temp)
+
+    count = 0
+    for i in range(50):
+        if count == 10:
+            break
+        for j in range(len(word_l)):
+            if count == 10:
+                break
+            if i == min_edit[j]:
+                print(f"\nword {j}: {word_l[j]}")
+                print(f"minimum edits = {min_edit[j]}\n")
+                print(df[j])
+                print("-"*50)
+                count += 1
+    for i in range(len(word_summary)):
+        for j in range(len(word_summary)-1):
+            if min_edit[j] > min_edit[j+1]:
+                min_edit[j], min_edit[j+1] = min_edit[j+1], min_edit[j]
+                word_summary[j], word_summary[j+1] = word_summary[j+1], word_summary[j]
+                sim_summary[j], sim_summary[j+1] = sim_summary[j+1], sim_summary[j]
+                df[j], df[j+1] = df[j+1], df[j]
+    summary = similarity2(word, word_count_dict, probabilities, min_edit)
+    print(summary)

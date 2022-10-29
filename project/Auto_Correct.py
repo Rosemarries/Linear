@@ -3,7 +3,6 @@ import string
 import numpy as np
 import pandas as pd
 import textdistance
-from collections import Counter
 
 def process_data(file_name):
     words = []
@@ -23,17 +22,13 @@ def process_freq(file_name):
 def save_vocab():
     word_l = process_data("words4.txt")
     vocab = set(word_l)
-    # print(f"The first 10 words in the text are : \n{word_l[0:10]}")
     print(f"There are {len(vocab)} words in the vocabulary.\n")
     return word_l
 
-def get_count(word_l, word, freq):
+def get_count(word_l, word, freq=[]):
     word_count_dict = {}
     for i in range(len(word_l)):
         word_count_dict[word_l[i]] = 1
-    # word_count_dict = Counter(word_l)
-    # print(f"There are {len(word_count_dict)} key values pairs")
-    # print(f"The count for the word {word} is {word_count_dict.get(word, 0)}")
     return word_count_dict
 
 # fix this function calculations
@@ -42,8 +37,6 @@ def get_probabilities(word_count_dict):
     total = sum(word_count_dict.values())
     for i in word_count_dict:
         probabilities[i] = float("{:f}".format(word_count_dict[i] / total))
-    # print(f"Length of probabilities is {len(probabilities)}")
-    # print(f"P(\"{word}\") is {probabilities[word]:.4f}\n")
     return probabilities
 
 def delete_letter(word, verbose=False):
@@ -118,24 +111,6 @@ def edit_2_letters(word, allow_switches=True):
     edit_2_set = set(replace_letter1 + switch_letter1 + delete_letter1 + insert_letter1)
     return edit_2_set
 
-def get_corrections(word, probabilities, vocab, n=2, verbose=True):
-    suggestions = []
-    n_best = []
-    if word in vocab:
-        suggestions = word
-    elif len(edit_1_letter(word)) != 0:
-        suggestions = edit_1_letter(word).intersection(set(vocab))
-    elif len(edit_2_letters(word)) != 0:
-        suggestions = edit_2_letters(word).intersection(set(vocab))
-    else:
-        suggestions = word
-    best_words = {i:probabilities[i] for i in suggestions if i in probabilities}
-    best_words = [(k, v) for k, v in sorted(best_words.items(), key=lambda item: item[1], reverse=True)]
-    n_best = best_words[:n]
-    if verbose:
-        print(f"Enter word : {word}, suggestions = {suggestions}")
-    return n_best
-
 def min_edit_distance(source, target, insert_cost=1, delete_cost=1, replace_cost=2):
     a, b, c = 0, 0, 0
     d = []
@@ -159,21 +134,20 @@ def min_edit_distance(source, target, insert_cost=1, delete_cost=1, replace_cost
     minimum_edit_distance = Dimension[len_src, len_target]
     return Dimension, minimum_edit_distance
 
-def similarity(word, word_count_dict, probs):
-    sim = [1-(textdistance.Jaccard(qval=2).distance(v,word)) for v in word_count_dict.keys()]
-    df = pd.DataFrame.from_dict(probs, orient='index').reset_index()
-    df = df.rename(columns={'index':'Word', 0:'Prob'})
-    df['Similarity'] = sim
-    output = df.sort_values(['Similarity', 'Prob'], ascending=False).head()
-    return output
+def similarity(word, word_l):
+    return [1-(textdistance.Jaccard(qval=2).distance(v,word)) for v in word_l]
 
-def similarity2(word, word_count_dict, probs, min_edit=[]):
-    sim = [1-(textdistance.Jaccard(qval=2).distance(v,word)) for v in word_count_dict.keys()]
+def summary(word, word_l, sim,  probs, min_edit=[]):
     df = pd.DataFrame.from_dict(probs, orient='index').reset_index()
     df = df.rename(columns={'index':'Word', 0:'Prob'})
+    df['Word'] = word_l
     df['Similarity'] = sim
-    df['MinEdit'] = min_edit
-    output = df.sort_values(['MinEdit', 'Similarity'], ascending=True).head()
+    if min_edit:
+        df['Min Edit'] = min_edit
+    if not len(min_edit):
+        output = df.sort_values(['Similarity'], ascending=False).head()
+    else:
+        output = df.sort_values(['Min Edit', 'Similarity'], ascending=[True, False]).head(10)
     return output
 
 word = input("Enter word : ")
@@ -186,9 +160,6 @@ probabilities = get_probabilities(word_count_dict)
 if word in word_l:
     print(f"We have {word} in our dictionary.")
 else:
-    summary = similarity(word, word_count_dict, probabilities)
-    word_summary = summary["Word"].values
-    sim_summary = summary["Similarity"].values
     matrix, min_edit, df = [], [], []
     for i in range(len(word_l)):
         matrix_temp, min_edit_temp = min_edit_distance(word, word_l[i])
@@ -198,13 +169,23 @@ else:
         cols = list("#" + word_l[i])
         df_temp = pd.DataFrame(matrix_temp, index=idx, columns=cols)
         df.append(df_temp)
+    
+    sim = similarity(word, word_l)
+    for i in range(len(min_edit)):
+        for j in range(len(min_edit)-1):
+            if min_edit[j] > min_edit[j+1]:
+                min_edit[j], min_edit[j+1] = min_edit[j+1], min_edit[j]
+                word_l[j], word_l[j+1] = word_l[j+1], word_l[j]
+                sim[j], sim[j+1] = sim[j+1], sim[j]
+                df[j], df[j+1] = df[j+1], df[j]
 
     count = 0
+    limits = 10
     for i in range(50):
-        if count == 10:
+        if count == limits:
             break
         for j in range(len(word_l)):
-            if count == 10:
+            if count == limits:
                 break
             if i == min_edit[j]:
                 print(f"\nword {j}: {word_l[j]}")
@@ -212,12 +193,5 @@ else:
                 print(df[j])
                 print("-"*50)
                 count += 1
-    for i in range(len(word_summary)):
-        for j in range(len(word_summary)-1):
-            if min_edit[j] > min_edit[j+1]:
-                min_edit[j], min_edit[j+1] = min_edit[j+1], min_edit[j]
-                word_summary[j], word_summary[j+1] = word_summary[j+1], word_summary[j]
-                sim_summary[j], sim_summary[j+1] = sim_summary[j+1], sim_summary[j]
-                df[j], df[j+1] = df[j+1], df[j]
-    summary = similarity2(word, word_count_dict, probabilities, min_edit)
-    print(summary)
+    
+    print(summary(word, word_l, sim, probabilities, min_edit))

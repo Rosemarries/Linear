@@ -10,7 +10,7 @@ def home():
 @views.route("/result", methods = [ "POST", "GET" ])
 def result():
     # need to fix this one!!!
-    if request.method == "GET":
+    if request.method == "POST":
         from actions import word_l
         form = cgi.FieldStorage()
         word_input = form.getvalue("word")
