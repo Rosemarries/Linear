@@ -3,6 +3,7 @@ import string
 import numpy as np
 import pandas as pd
 import textdistance
+import time
 
 def process_data(file_name):
     words = []
@@ -145,13 +146,13 @@ def summary(word, word_l, sim,  probs, min_edit=[]):
     if min_edit:
         df['Min Edit'] = min_edit
     if not len(min_edit):
-        output = df.sort_values(['Similarity'], ascending=False).head()
+        output = df.sort_values(['Similarity'], ascending=False).head(10)
     else:
         output = df.sort_values(['Min Edit', 'Similarity'], ascending=[True, False]).head(10)
     return output
 
 word = input("Enter word : ")
-
+t = time.time()
 word_l = save_vocab()
 freqs = process_freq("freq.txt")
 word_count_dict = get_count(word_l, word, freqs)
@@ -203,3 +204,4 @@ else:
                 count += 1
     
     print(summary(word, word_l, sim, probabilities, min_edit))
+    print(str(round(time.time()-t, 4)))
